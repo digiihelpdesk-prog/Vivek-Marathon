@@ -14,15 +14,18 @@ var RAZORPAY_LOGO    = ""; // ← optional: URL to your logo image
 var DEPT_PROGRAMMES = {
   "eng":             ["B.Tech", "M.Tech", "Ph.D"],
   "comp":            ["BCA", "MCA", "B.Sc Computer Science"],
-  "science":         ["B.Sc Microbiology", "B.Sc Home Science", "B.Sc Math & General", "M.Sc Botany", "M.Sc Zoology", "M.Sc Home Science", "M.Sc Chemistry", "M.Sc Microbiology"],
-  "mgmt":            ["BBA", "B.Com", "MBA"],
   "nursing":         ["B.Sc Nursing", "M.Sc Nursing", "ANM", "GNM", "Pb B.Sc Nursing"],
+  "ayurveda":        ["BAMS", "BNYS"],
+  "health":          ["BMLS", "B.Opt", "BPT"],
   "pharmacy":        ["D.Pharma", "B.Pharma", "M.Pharmacology", "M.Pharmaceutics"],
   "faculty_pharmacy":["D.Pharma"],
-  "health":          ["BMLS", "B.Opt", "BPT"],
-  "ayurveda":        ["BAMS", "BNYS"],
+  "mgmt":            ["BBA", "B.Com", "MBA"],
   "law":             ["LLB", "LLM", "BA LLB"],
-  "education":       ["BA", "MA", "B.Ed", "M.Ed"],
+  "education":       ["BA", "MA", "B.Ed", "M.Ed", "M.A.Ed", "B.T.C"],
+  "science":         ["B.Sc Microbiology", "B.Sc Home Science", "B.Sc Math & General", "M.Sc Botany", "M.Sc Zoology", "M.Sc Home Science", "M.Sc Chemistry", "M.Sc Microbiology"],
+  "agri":            ["B.Sc Agriculture", "M.Sc Agriculture(Horticulture)", "M.Sc Agriculture(Floriculture)", "M.Sc Agriculture(Agronomy)"],
+  "social":          ["BSW", "MSW"],
+  "vet":             ["B.VSc & AH"],
   "na":              ["Not Applicable", "Other"]
 };
 
@@ -212,12 +215,9 @@ function openRazorpay(payload) {
       payload.paymentStatus  = "Paid";
       payload.paymentId      = response.razorpay_payment_id;
       payload.paymentOrderId = response.razorpay_order_id || "";
-      payload.formNo         = getNextFormNo(); // ✅ Only generated after successful payment
-
+      payload.formNo         = null; // Backend will assign 101, 102, 103...
       saveToBackend(payload);
-      sendToSheet(payload);
-      showSuccess(payload.fullName, payload.formNo, response.razorpay_payment_id);
-    },
+},
 
     // ── Modal closed / dismissed ──
     modal: {
