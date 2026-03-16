@@ -12,22 +12,18 @@ var RAZORPAY_LOGO    = ""; // ← optional: URL to your logo image
 
 // ── Department → Programme Mapping ──
 var DEPT_PROGRAMMES = {
-  "cse":     ["B.Tech (CSE)", "M.Tech (CSE)", "BCA", "MCA", "Ph.D (CSE)", "Diploma (CSE)"],
-  "ece":     ["B.Tech (ECE)", "M.Tech (ECE)", "Ph.D (ECE)", "Diploma (ECE)"],
-  "me":      ["B.Tech (ME)", "M.Tech (ME)", "Ph.D (ME)", "Diploma (ME)"],
-  "ce":      ["B.Tech (CE)", "M.Tech (CE)", "Ph.D (CE)", "Diploma (CE)"],
-  "ee":      ["B.Tech (EE)", "M.Tech (EE)", "Ph.D (EE)", "Diploma (EE)"],
-  "it":      ["B.Tech (IT)", "M.Tech (IT)", "BCA", "MCA", "Ph.D (IT)", "Diploma (IT)"],
-  "bio":     ["B.Tech (Biotechnology)", "M.Tech (Biotechnology)", "B.Sc (Biotechnology)", "M.Sc (Biotechnology)", "Ph.D (Biotechnology)"],
-  "pharma":  ["B.Pharm", "M.Pharm", "D.Pharm", "Ph.D (Pharmacy)"],
-  "mgmt":    ["BBA", "MBA", "Ph.D (Management)"],
-  "commerce":["B.Com", "M.Com", "Ph.D (Commerce)"],
-  "science": ["B.Sc", "M.Sc", "Ph.D (Science)"],
-  "arts":    ["B.A", "M.A", "Ph.D (Arts)"],
-  "law":     ["LLB", "LLM", "B.A LLB", "Ph.D (Law)"],
-  "edu":     ["B.Ed", "M.Ed", "Ph.D (Education)"],
-  "other":   ["Other"],
-  "na":      ["Not Applicable"]
+  "eng":             ["B.Tech", "M.Tech", "Ph.D"],
+  "comp":            ["BCA", "MCA", "B.Sc Computer Science"],
+  "science":         ["B.Sc Microbiology", "B.Sc Home Science", "B.Sc Math & General", "M.Sc Botany", "M.Sc Zoology", "M.Sc Home Science", "M.Sc Chemistry", "M.Sc Microbiology"],
+  "mgmt":            ["BBA", "B.Com", "MBA"],
+  "nursing":         ["B.Sc Nursing", "M.Sc Nursing", "ANM", "GNM", "Pb B.Sc Nursing"],
+  "pharmacy":        ["D.Pharma", "B.Pharma", "M.Pharmacology", "M.Pharmaceutics"],
+  "faculty_pharmacy":["D.Pharma"],
+  "health":          ["BMLS", "B.Opt", "BPT"],
+  "ayurveda":        ["BAMS", "BNYS"],
+  "law":             ["LLB", "LLM", "BA LLB"],
+  "education":       ["BA", "MA", "B.Ed", "M.Ed"],
+  "na":              ["Not Applicable", "Other"]
 };
 
 function filterProgrammes() {
@@ -63,14 +59,16 @@ function peekFormNo() {
   var current = parseInt(localStorage.getItem("vm2025_formNo") || "100");
   return current + 1;
 }
+// ── Form No — only generated after successful payment ──
 function getNextFormNo() {
-  var next = peekFormNo();
-  localStorage.setItem("vm2025_formNo", next);
-  return next;
+  var current = parseInt(localStorage.getItem("vm2026_formNo") || "100");
+  var next = current + 1;
+  localStorage.setItem("vm2026_formNo", next);
+  return next; // returns 101, 102, 103...
 }
 
 window.addEventListener("load", function() {
-  document.getElementById("formNo").value = peekFormNo();
+  document.getElementById("formNo").value = "Will be generated after payment";
 });
 
 // ── Auto-update declaration name ──
@@ -153,8 +151,8 @@ function submitForm() {
   var formNo = getNextFormNo();
 
   currentPayload = {
-    formNo:        formNo,
-    timestamp:     new Date().toLocaleString("en-IN"),
+    formNo: null,
+    timestamp: new Date().toLocaleString("en-IN"),
     fullName:      fullName,
     fatherName:    fatherName,
     dob:           dob,
@@ -214,8 +212,9 @@ function openRazorpay(payload) {
       payload.paymentStatus  = "Paid";
       payload.paymentId      = response.razorpay_payment_id;
       payload.paymentOrderId = response.razorpay_order_id || "";
+      payload.formNo         = getNextFormNo(); // ✅ Only generated after successful payment
 
-      saveLocally(payload);
+      saveToBackend(payload);
       sendToSheet(payload);
       showSuccess(payload.fullName, payload.formNo, response.razorpay_payment_id);
     },
@@ -223,10 +222,10 @@ function openRazorpay(payload) {
     // ── Modal closed / dismissed ──
     modal: {
       ondismiss: function() {
-        // Payment was cancelled — save as pending and show success with warning
         payload.paymentStatus = "Pending";
         payload.paymentId     = "";
-        saveLocally(payload);
+        payload.formNo        = null; // ❌ No form no for failed/cancelled payment
+        saveToBackend(payload);
         sendToSheet(payload);
         showSuccessPending(payload.fullName, payload.formNo);
       }
