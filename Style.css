@@ -486,12 +486,15 @@ body {
   letter-spacing: 1px;
 }
 
+<<<<<<< HEAD
 .field select:disabled {
   background: #f0f0f0;
   color: var(--muted);
   cursor: not-allowed;
 }
 
+=======
+>>>>>>> 0d72c9df475c3c490546711c7043c2eda12169dc
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .hero-inner { flex-wrap: wrap; gap: 14px; }
